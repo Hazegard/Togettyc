@@ -29,7 +29,6 @@ type TemplateData struct {
 }
 
 func main() {
-	print(uint8((7 & 0xff_00) >> 8))
 	config := Config{}
 	_ = kong.Parse(&config)
 
