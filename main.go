@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"maze.io/x/ttyrec"
@@ -8,6 +10,7 @@ import (
 	"time"
 
 	"github.com/alecthomas/kong"
+	"github.com/klauspost/compress/zstd"
 )
 
 type Config struct {
@@ -16,6 +19,9 @@ type Config struct {
 	Html       bool   `help:"Display result in HTML" short:"H" default:"false"`
 	RecordFile string `help:"Dashboard page" default:"all" arg:""`
 }
+
+// Zstandard magic bytes: 0x28, 0xB5, 0x2F, 0xFD.
+var zstdMagic = []byte{0x28, 0xB5, 0x2F, 0xFD}
 
 func main() {
 	config := Config{}
@@ -29,6 +35,22 @@ func main() {
 		if r, err = os.Open(config.RecordFile); err != nil {
 			fatalf("error opening %s: %v\n", config.RecordFile, err)
 		}
+	}
+	// Wrap the original reader in a bufio.Reader to peek at magic bytes.
+	br := bufio.NewReader(r)
+	peek, err := br.Peek(4)
+	if err != nil {
+		fatalf("error reading magic bytes: %v\n", err)
+	}
+
+	if bytes.Equal(peek, zstdMagic) {
+		// Create a zstd decoder using the buffered reader.
+		decoder, err := zstd.NewReader(br)
+		if err != nil {
+			fatalf("error creating zstd reader: %v\n", err)
+		}
+		defer decoder.Close()
+		r = decoder.IOReadCloser()
 	}
 	defer r.Close()
 
