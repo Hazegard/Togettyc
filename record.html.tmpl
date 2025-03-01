@@ -51,7 +51,7 @@
         visibility: hidden;
     }
 }
-
+{{ if not .Config.NoColor }}
 .term-fg1 { } /* don't bold beccause it looks weird */
 .term-fg2 { color: #838887; } /* faint (decreased intensity) - same as gray really */
 .term-fg3 { font-style: italic; } /* italic */
@@ -573,7 +573,7 @@
 .term-bgx253 { background: #dadada; }
 .term-bgx254 { background: #e4e4e4; }
 .term-bgx255 { background: #eeeeee; }
-
+{{ end }}
 </style>
 <div class="term-container">
 {{ range .Frames }}{{ if $.Config.Date }}<time datetime="{{ FormatDate .Date }}">{{ FormatDate .Date }}</time>{{ end }}{{ Ansi2Html .Data }}

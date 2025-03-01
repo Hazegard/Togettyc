@@ -29,7 +29,7 @@ type Record struct {
 	CurrentFrame int
 }
 
-func (m *Record) ReadAll(cfg Config) []Frame {
+func (m *Record) ReadAll() []Frame {
 	frames, stop := m.Decoder.DecodeStream()
 	defer stop()
 	var timestamps []time.Time
