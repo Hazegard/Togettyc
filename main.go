@@ -5,8 +5,11 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math/rand"
 	"maze.io/x/ttyrec"
 	"os"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/alecthomas/kong"
@@ -20,6 +23,24 @@ type Config struct {
 	RecordFile string    `help:"Dashboard page" default:"all" arg:"" type:"existingfile"`
 	StartDate  LocalTime `help:"Show results after the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"S" `
 	EndDate    LocalTime `help:"Show results before the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"E" `
+	TmuxMode   bool      `help:"Tmux" short:"T" default:"false" hidden:"true"`
+}
+
+func (c *Config) WriteCli() string {
+	args := []string{}
+	if c.Date {
+		args = append(args, "--date")
+	}
+	if c.NoColor {
+		args = append(args, "--no-color")
+	}
+	if c.Html {
+		args = append(args, "--html")
+	}
+	if c.RecordFile != "" {
+		args = append(args, c.RecordFile)
+	}
+	return strings.Join(args, " ")
 }
 
 type LocalTime time.Time
@@ -84,7 +105,15 @@ func main() {
 		CurrentFrame: 0,
 	}
 
-	records := m.ReadAll()
+	records := []Frame{}
+	if config.TmuxMode {
+		records = m.ReadAll()
+	} else {
+		records, err = tmux(config)
+	}
+	if err != nil {
+		fatalf("error reading records: %v\n", err)
+	}
 	if !config.EndDate.Get().IsZero() || !config.StartDate.Get().IsZero() {
 		records = FilterRecordsDate(config, records)
 	}
@@ -116,4 +145,107 @@ func FilterRecordsDate(config Config, records []Frame) []Frame {
 		}
 	}
 	return newFrames
+}
+
+func tmux(config Config) ([]Frame, error) {
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	fmt.Println("tmux")
+	exePath, err := os.Executable()
+	if err != nil {
+		return []Frame{}, err
+	}
+	id := randString(16)
+	args := []string{
+		"new-session",
+		"-ds",
+		id,
+		"\\;",
+		"send-keys",
+		"-t",
+		fmt.Sprintf("%s:1.0", id),
+		fmt.Sprintf("%s -T %s; tmux wait -S %s", exePath, config.WriteCli(), id),
+		"C-m",
+		"\\;",
+		"wait",
+		id,
+		"\\;",
+		"capture-pane",
+		"-t",
+		fmt.Sprintf("%s:1.0", id),
+		"-eCpNJ",
+		"-S",
+		"-",
+		"-E",
+		"-",
+		"\\;",
+		"kill-session",
+		"-t",
+		id,
+	}
+	cmd := exec.Command("tmux", args...)
+	fmt.Println(cmd.Args)
+
+	var out bytes.Buffer
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	// Run the command.
+	if err := cmd.Run(); err != nil {
+		return []Frame{}, err
+	}
+	fmt.Println(len(out.Bytes()))
+	fmt.Println(len(out.Bytes()))
+	fmt.Println(len(out.Bytes()))
+	fmt.Println(len(out.Bytes()))
+	fmt.Println(len(out.Bytes()))
+	fmt.Println(len(out.Bytes()))
+
+	// res := out.String()
+	newRecords := []Frame{}
+	date := []byte{}
+	for i, line := range bytes.Split(out.Bytes(), []byte("\n")) {
+		if i%2 == 0 && config.Date {
+			date = line
+		} else {
+			date, err := time.ParseInLocation(timeFormat, string(date), time.Local)
+			if err != nil {
+				fatalf("error parsing date: %v\n", err)
+				continue
+			}
+			records := Frame{
+				Data: line,
+				Date: date,
+			}
+			newRecords = append(newRecords, records)
+		}
+	}
+	fmt.Println(len(newRecords))
+	return newRecords, nil
+}
+
+// tmux new-session -ds TEST \; send-keys -t TEST:1.0 "go run . -d --no-color  output.log.ttyrec; tmux wait -S ping" C-m \; wait ping \; capture-pane -t TEST:1.0 -eCpNJ -S - -E - \; kill-session -t TEST
+func IsInPath(cmd string) bool {
+	res, err := exec.LookPath(cmd)
+	if err != nil {
+		return false
+	}
+	return res != ""
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func randString(n int) string {
+	// Seed the random number generator.
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
