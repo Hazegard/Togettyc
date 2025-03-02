@@ -11,11 +11,16 @@ const ansi2 = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*
 const ansi = `\x1B\[[0-9;]*[a-zA-Z]`
 
 var re = regexp.MustCompile(ansi)
+var re2 = regexp.MustCompile(ansi2)
 
-func StripAll(records []Frame) []Frame {
+func StripAllAnsi(str []byte) []byte {
+	return re2.ReplaceAll(str, []byte{})
+}
+
+func StripColor(records []Frame) []Frame {
 	var strippedFrames []Frame
 	for _, record := range records {
-		strippedData := []byte(Strip(string(record.Data)))
+		strippedData := []byte(StripColorString(string(record.Data)))
 
 		strippedFrame := Frame{
 			Date: record.Date,
@@ -26,16 +31,24 @@ func StripAll(records []Frame) []Frame {
 	return strippedFrames
 }
 
-func Strip(str string) string {
+func StripColorBytes(str []byte) []byte {
+	return re.ReplaceAll(str, []byte{})
+}
+
+func StripColorString(str string) string {
 	return re.ReplaceAllString(str, "")
 }
 
 func GenerateConsoleOutput(config Config, records []Frame) {
 	var result [][]byte
+	sep := ": "
+	if config.InternalTmuxMode {
+		sep = "\n"
+	}
 
 	for _, frame := range records {
 		if config.Date {
-			content := append([]byte(FormatDate(frame.Date)+": "), frame.Data...)
+			content := append([]byte("\033[0m"+FormatDate(frame.Date)+sep), frame.Data...)
 			result = append(result, content)
 		} else {
 			result = append(result, frame.Data)

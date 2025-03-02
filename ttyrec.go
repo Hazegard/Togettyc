@@ -77,9 +77,13 @@ func (m *Record) ReadAll() []Frame {
 
 	newFrames := []Frame{}
 	for i := 0; i < len(datas); i++ {
+		if timestamps[i].Format("2006") == "0001" {
+			continue
+		}
 		data := bytes.TrimRight(datas[i], " ")
 
 		data = bytes.ReplaceAll(data, []byte("\033[2J\033[3J\033[H"), []byte(""))
+		data = bytes.ReplaceAll(data, []byte("\033[?1049h"), []byte(""))
 
 		f := Frame{
 			Data: data,

@@ -576,6 +576,6 @@
 {{ end }}
 </style>
 <div class="term-container">
-{{ range .Frames }}{{ if $.Config.Date }}<time datetime="{{ FormatDate .Date }}">{{ FormatDate .Date }}</time>{{ end }}{{ Ansi2Html .Data }}
+{{ range .Frames }}{{ if $.Config.Date }}<time datetime="{{ FormatDate .Date }}">{{ FormatDate .Date }}: </time>{{ end }}{{ Ansi2Html .Data }}
 {{ end }}
 </div>

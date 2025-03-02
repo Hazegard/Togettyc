@@ -17,26 +17,21 @@ import (
 )
 
 type Config struct {
-	Date       bool      `help:"Show date" optional:"" short:"d" default:"false"`
-	NoColor    bool      `help:"Disable colors" optional:"" default:"false"`
-	Html       bool      `help:"Display result in HTML" optional:"" short:"H" default:"false"`
-	RecordFile string    `help:"Dashboard page" default:"all" arg:"" type:"existingfile"`
-	StartDate  LocalTime `help:"Show results after the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"S" `
-	EndDate    LocalTime `help:"Show results before the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"E" `
-	TmuxMode   bool      `help:"Tmux" short:"T" default:"false" hidden:"true"`
+	Date             bool      `help:"Show date" optional:"" short:"d" default:"false"`
+	NoColor          bool      `help:"Disable colors" optional:"" default:"false"`
+	Html             bool      `help:"Display result in HTML" optional:"" short:"H" default:"false"`
+	RecordFile       string    `help:"Dashboard page" default:"all" arg:"" type:"existingfile"`
+	StartDate        LocalTime `help:"Show results after the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"S" `
+	EndDate          LocalTime `help:"Show results before the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"E" `
+	Tmux             bool      `help:"Clean the output with tmux. It should reduce the noise provoked by garbage terminal manipulation" short:"T" default:"false"`
+	InternalTmuxMode bool      `help:"Tmux" default:"false" hidden:"true"`
 }
 
 func (c *Config) WriteCli() string {
-	args := []string{}
-	if c.Date {
-		args = append(args, "--date")
+	args := []string{
+		"--date",
 	}
-	if c.NoColor {
-		args = append(args, "--no-color")
-	}
-	if c.Html {
-		args = append(args, "--html")
-	}
+
 	if c.RecordFile != "" {
 		args = append(args, c.RecordFile)
 	}
@@ -106,11 +101,12 @@ func main() {
 	}
 
 	records := []Frame{}
-	if config.TmuxMode {
+	if config.InternalTmuxMode || !config.Tmux || !IsInPath("tmux") {
 		records = m.ReadAll()
 	} else {
 		records, err = tmux(config)
 	}
+
 	if err != nil {
 		fatalf("error reading records: %v\n", err)
 	}
@@ -118,7 +114,7 @@ func main() {
 		records = FilterRecordsDate(config, records)
 	}
 	if config.NoColor {
-		records = StripAll(records)
+		records = StripColor(records)
 	}
 	if config.Html {
 		GenerateHtml(config, records)
@@ -148,16 +144,6 @@ func FilterRecordsDate(config Config, records []Frame) []Frame {
 }
 
 func tmux(config Config) ([]Frame, error) {
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
-	fmt.Println("tmux")
 	exePath, err := os.Executable()
 	if err != nil {
 		return []Frame{}, err
@@ -167,16 +153,16 @@ func tmux(config Config) ([]Frame, error) {
 		"new-session",
 		"-ds",
 		id,
-		"\\;",
+		";",
 		"send-keys",
 		"-t",
 		fmt.Sprintf("%s:1.0", id),
-		fmt.Sprintf("%s -T %s; tmux wait -S %s", exePath, config.WriteCli(), id),
+		fmt.Sprintf(" %s --internal-tmux-mode %s; tmux wait -S %s", exePath, config.WriteCli(), id),
 		"C-m",
-		"\\;",
+		";",
 		"wait",
 		id,
-		"\\;",
+		";",
 		"capture-pane",
 		"-t",
 		fmt.Sprintf("%s:1.0", id),
@@ -185,48 +171,49 @@ func tmux(config Config) ([]Frame, error) {
 		"-",
 		"-E",
 		"-",
-		"\\;",
+		";",
 		"kill-session",
 		"-t",
 		id,
 	}
 	cmd := exec.Command("tmux", args...)
-	fmt.Println(cmd.Args)
 
 	var out bytes.Buffer
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = &out
 	// Run the command.
 	if err := cmd.Run(); err != nil {
 		return []Frame{}, err
 	}
-	fmt.Println(len(out.Bytes()))
-	fmt.Println(len(out.Bytes()))
-	fmt.Println(len(out.Bytes()))
-	fmt.Println(len(out.Bytes()))
-	fmt.Println(len(out.Bytes()))
-	fmt.Println(len(out.Bytes()))
 
 	// res := out.String()
 	newRecords := []Frame{}
-	date := []byte{}
-	for i, line := range bytes.Split(out.Bytes(), []byte("\n")) {
-		if i%2 == 0 && config.Date {
-			date = line
-		} else {
-			date, err := time.ParseInLocation(timeFormat, string(date), time.Local)
-			if err != nil {
-				fatalf("error parsing date: %v\n", err)
-				continue
-			}
-			records := Frame{
-				Data: line,
-				Date: date,
-			}
-			newRecords = append(newRecords, records)
+	date := time.Time{}
+	for _, line := range bytes.Split(out.Bytes(), []byte("\n")) {
+
+		// We try to parse the current line as a date
+		dd, err := time.ParseInLocation(timeFormat, string(StripColorBytes(bytes.ReplaceAll(line, []byte("\\033"), []byte("\033")))), time.Local)
+
+		// IF succes, we hold it for the next iteration
+		if err == nil {
+			date = dd
+			continue
 		}
+
+		// If the date is 0, skip
+		if date.Format("2006") == "0001" {
+			continue
+		}
+		// Remove ANSI escape sequences
+		line = bytes.ReplaceAll(line, []byte("\\033"), []byte("\033"))
+		line = bytes.ReplaceAll(line, []byte("\033[2J\033[3J\033[H"), []byte(""))
+		line = bytes.ReplaceAll(line, []byte("\033[?1049h"), []byte(""))
+		records := Frame{
+			Data: line,
+			Date: date,
+		}
+		newRecords = append(newRecords, records)
+
 	}
-	fmt.Println(len(newRecords))
 	return newRecords, nil
 }
 
