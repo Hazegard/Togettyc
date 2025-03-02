@@ -14,14 +14,34 @@ import (
 )
 
 type Config struct {
-	Date       bool   `help:"Show date" short:"d" default:"false"`
-	NoColor    bool   `help:"Disable colors" default:"false"`
-	Html       bool   `help:"Display result in HTML" short:"H" default:"false"`
-	RecordFile string `help:"Dashboard page" default:"all" arg:""`
+	Date       bool      `help:"Show date" optional:"" short:"d" default:"false"`
+	NoColor    bool      `help:"Disable colors" optional:"" default:"false"`
+	Html       bool      `help:"Display result in HTML" optional:"" short:"H" default:"false"`
+	RecordFile string    `help:"Dashboard page" default:"all" arg:"" type:"existingfile"`
+	StartDate  LocalTime `help:"Show results after the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"S" `
+	EndDate    LocalTime `help:"Show results before the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"E" `
+}
+
+type LocalTime time.Time
+
+func (t *LocalTime) UnmarshalText(content []byte) error {
+	tt, err := time.ParseInLocation(timeFormat, string(content), time.Local)
+	if err != nil {
+		return err
+	}
+	*t = LocalTime(tt)
+	return nil
+}
+
+func (t *LocalTime) Get() time.Time {
+	return time.Time(*t)
 }
 
 // Zstandard magic bytes: 0x28, 0xB5, 0x2F, 0xFD.
-var zstdMagic = []byte{0x28, 0xB5, 0x2F, 0xFD}
+var (
+	zstdMagic  = []byte{0x28, 0xB5, 0x2F, 0xFD}
+	timeFormat = "2006-01-02 15:04:05"
+)
 
 func main() {
 	config := Config{}
@@ -49,6 +69,8 @@ func main() {
 		if err != nil {
 			fatalf("error creating zstd reader: %v\n", err)
 		}
+		originalFile := r
+		defer originalFile.Close()
 		defer decoder.Close()
 		r = decoder.IOReadCloser()
 	}
@@ -63,6 +85,9 @@ func main() {
 	}
 
 	records := m.ReadAll()
+	if !config.EndDate.Get().IsZero() || !config.StartDate.Get().IsZero() {
+		records = FilterRecordsDate(config, records)
+	}
 	if config.NoColor {
 		records = StripAll(records)
 	}
@@ -74,10 +99,21 @@ func main() {
 }
 
 func FormatDate(date time.Time) string {
-	return date.Format("2006-01-02 15:04:05")
+	return date.Format(timeFormat)
 }
 
 func fatalf(format string, v ...interface{}) {
 	fmt.Fprintf(os.Stderr, format, v...)
 	os.Exit(1)
+}
+
+func FilterRecordsDate(config Config, records []Frame) []Frame {
+	newFrames := []Frame{}
+
+	for _, frame := range records {
+		if (config.EndDate.Get().IsZero() || frame.Date.Before(config.EndDate.Get())) && (config.StartDate.Get().IsZero() || frame.Date.After(config.StartDate.Get())) {
+			newFrames = append(newFrames, frame)
+		}
+	}
+	return newFrames
 }

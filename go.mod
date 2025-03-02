@@ -1,4 +1,4 @@
-module goytt
+module togettyc
 
 go 1.24
 

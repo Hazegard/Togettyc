@@ -16,13 +16,6 @@ type Frame struct {
 	Date time.Time
 }
 
-func NewFrameFromTtyrec(f *ttyrec.Frame) frame {
-	return frame{
-		Data: f.Data,
-		Date: time.Unix(int64(f.Time.Seconds), int64(f.Time.MicroSeconds)*1000),
-	}
-}
-
 type Record struct {
 	Decoder      *ttyrec.Decoder
 	Frames       []frame
