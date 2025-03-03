@@ -34,7 +34,6 @@ func openEncoder(config Config) (io.WriteCloser, error) {
 		err error
 	)
 
-	fmt.Printf("%+v\n", config)
 	if config.Append {
 		f, err = os.OpenFile(config.Output, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	} else {

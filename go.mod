@@ -8,6 +8,8 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/klauspost/compress v1.18.0
 	github.com/mitchellh/go-ps v1.0.0
-	golang.org/x/sys v0.30.0
+	golang.org/x/term v0.29.0
 	maze.io/x/ttyrec v1.0.0
 )
+
+require golang.org/x/sys v0.30.0 // indirect

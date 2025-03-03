@@ -2,7 +2,9 @@ package ttyprint
 
 import (
 	"bytes"
+	"fmt"
 	"maze.io/x/ttyrec"
+	"os"
 	"time"
 )
 

@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"github.com/creack/pty"
 	"io"
-	"log"
 	"maze.io/x/ttyrec"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
-	"syscall"
 )
 
 func run(config Config) error {
@@ -42,33 +39,30 @@ func run(config Config) error {
 
 	defer func() { _ = ptmx.Close() }()
 
-	go func() {
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGINT)
-		for range sigCh {
-			// Send SIGINT to the entire process group of the child.
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
-				log.Printf("failed to forward SIGINT: %v", err)
-			}
-		}
-	}()
-
 	// Resize the pty to match the current terminal size.
 	if err := pty.InheritSize(os.Stdin, ptmx); err != nil {
 		return fmt.Errorf("error resizing pty: %v", err)
 	}
 
+	/*sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGWINCH)
 	// Set up a signal handler to watch for window size changes.
 	go func() {
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGWINCH)
 		for range sigCh {
 			if err := pty.InheritSize(os.Stdin, ptmx); err != nil {
 				log.Printf("error resizing pty: %v", err)
 			}
 		}
 	}()
+	sigCh <- syscall.SIGWINCH
+	defer func() { signal.Stop(sigCh); close(sigCh) }()
 
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		return fmt.Errorf("error creating terminal state: %v", err)
+	}
+	defer func() { _ = term.Restore(int(os.Stdin.Fd()), oldState) }()
+	*/
 	go func() {
 		_, _ = io.Copy(ptmx, os.Stdin)
 	}()
