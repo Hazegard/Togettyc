@@ -75,23 +75,25 @@ func (c *Config) Run() error {
 		return fmt.Errorf("error reading magic bytes: %v\n", err)
 	}
 
+	var decoder *ttyrec.Decoder
 	if bytes.Equal(peek, zstdMagic) {
 		// Create a zstd decoder using the buffered reader.
-		decoder, err := zstd.NewReader(br)
+		zstdDecoder, err := zstd.NewReader(br)
 		if err != nil {
 			return fmt.Errorf("error creating zstd reader: %v\n", err)
 		}
 		originalFile := r
 		defer originalFile.Close()
-		defer decoder.Close()
-		r = decoder.IOReadCloser()
+		defer zstdDecoder.Close()
+		r = zstdDecoder.IOReadCloser()
+		decoder = ttyrec.NewDecoder(r)
+	} else {
+		decoder = ttyrec.NewDecoder(br)
 	}
 	defer r.Close()
 
-	d := ttyrec.NewDecoder(r)
-
 	m := Record{
-		Decoder:      d,
+		Decoder:      decoder,
 		Frames:       []frame{},
 		CurrentFrame: 0,
 	}

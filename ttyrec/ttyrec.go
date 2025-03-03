@@ -10,10 +10,10 @@ import (
 )
 
 type Config struct {
-	Append   bool   `help:"append to the existing file" short:"a"`
-	Compress bool   `help:"compress to the output file" short:"Z"`
-	Output   string `help:"output file name" short:"f"`
-	Shell    string
+	Append   bool     `help:"append to the existing file" short:"a"`
+	Compress bool     `help:"compress to the output file" short:"Z"`
+	Output   string   `help:"output file name" short:"f"`
+	Shell    string   `help:"shell to use, using current one by default" short:"S"`
 	Exe      string   `help:"Command to execute" arg:"" optional""`
 	Args     []string `arg:"" help:"arguments" optional""`
 }

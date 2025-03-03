@@ -8,8 +8,8 @@ import (
 )
 
 type Config struct {
-	Print ttyprint.Config `cmd:"" help:"Render the record" default="1"`
-	Rec   ttyrec.Config   `cmd:"" help:"Render the record"`
+	Print ttyprint.Config `cmd:"" help:"Render the record"`
+	Rec   ttyrec.Config   `cmd:"" help:"Render the record" default:"withargs"`
 }
 
 func main() {
