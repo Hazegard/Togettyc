@@ -13,7 +13,7 @@ type Config struct {
 }
 
 func main() {
-	cfg := Config{}
+	cfg := ttyprint.Config{}
 	kongOptions := []kong.Option{
 		kong.Name("Togettyc"),
 		kong.Description("Cross-platform reimplementation og ttyrec"),

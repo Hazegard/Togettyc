@@ -7,11 +7,11 @@ import (
 	"github.com/klauspost/compress/zstd"
 	"io"
 	"math/rand"
-	"maze.io/x/ttyrec"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+	"togettyc/ttyrec"
 )
 
 type Config struct {
@@ -156,6 +156,7 @@ func tmux(config Config) ([]Frame, error) {
 		"send-keys",
 		"-t",
 		fmt.Sprintf("%s:1.0", id),
+		// fmt.Sprintf(" %s print --internal-tmux-mode %s; tmux wait -S %s", exePath, config.WriteCli(), id),
 		fmt.Sprintf(" %s --internal-tmux-mode %s; tmux wait -S %s", exePath, config.WriteCli(), id),
 		"C-m",
 		";",

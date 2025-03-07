@@ -2,8 +2,8 @@ package ttyprint
 
 import (
 	"bytes"
-	"maze.io/x/ttyrec"
 	"time"
+	"togettyc/ttyrec"
 )
 
 type frame struct {
@@ -32,7 +32,6 @@ func (m *Record) ReadAll() []Frame {
 	currentTs := time.Time{}
 
 	for f := range frames {
-
 		bb := bytes.Split(f.Data, []byte("\n"))
 
 		i0 := 0
