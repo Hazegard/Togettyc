@@ -55,19 +55,18 @@ func run(config Config) error {
 		_, _ = io.Copy(ptmx, os.Stdin)
 	}()
 
-	go func(r io.Reader) {
-		f, err := openEncoder(config)
-		if err != nil {
-			fatalf("error opening encoder: %v", err)
-		}
-		defer f.Close()
-		e := NewEncoder(f)
-
-		_, err = io.Copy(io.MultiWriter(e, os.Stdout), r)
+	f, err := openEncoder(config)
+	if err != nil {
+		fatalf("error opening encoder: %v", err)
+	}
+	defer f.Close()
+	e := NewEncoder(f)
+	go func() {
+		_, err = io.Copy(io.MultiWriter(e, os.Stdout), ptmx)
 		if err != nil {
 			fatalf("error writing to encoder: %v", err)
 		}
-	}(ptmx)
+	}()
 
 	if err = cmd.Wait(); err != nil {
 		return fmt.Errorf("error running command: %v", err)
