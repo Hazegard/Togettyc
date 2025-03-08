@@ -150,7 +150,7 @@ func tmux(config Config) ([]Frame, error) {
 	id := randString(16)
 	sessionSocket := fmt.Sprintf("/tmp/tmux_togettyc-%s.sock", id)
 	defer func() {
-		os.Remove(sessionSocket)
+		_ = os.Remove(sessionSocket)
 	}()
 	paneId := fmt.Sprintf("%s:1.0", id)
 	args := []string{
@@ -226,8 +226,8 @@ func tmux(config Config) ([]Frame, error) {
 		}
 		// Remove ANSI escape sequences
 		line = bytes.ReplaceAll(line, []byte("\\033"), []byte("\033"))
-		line = bytes.ReplaceAll(line, []byte("\033[2J\033[3J\033[H"), []byte(""))
-		line = bytes.ReplaceAll(line, []byte("\033[?1049h"), []byte(""))
+		//line = bytes.ReplaceAll(line, []byte("\033[2J\033[3J\033[H"), []byte(""))
+		//line = bytes.ReplaceAll(line, []byte("\033[?1049h"), []byte(""))
 		records := Frame{
 			Data: line,
 			Date: date,
