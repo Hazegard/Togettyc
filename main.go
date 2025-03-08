@@ -3,13 +3,15 @@ package main
 import (
 	"github.com/alecthomas/kong"
 	"log"
+	"togettyc/ttyplay"
 	"togettyc/ttyprint"
 	"togettyc/ttyrec"
 )
 
 type Config struct {
 	Print ttyprint.Config `cmd:"" help:"Render the record"`
-	Rec   ttyrec.Config   `cmd:"" help:"Render the record" default:"withargs"`
+	Rec   ttyrec.Config   `cmd:"" help:"Record" default:"withargs"`
+	Play  ttyplay.Config  `cmd:"" help:"Play the record"`
 }
 
 func main() {

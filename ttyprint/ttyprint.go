@@ -1,17 +1,14 @@
 package ttyprint
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/klauspost/compress/zstd"
-	"io"
 	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
-	"togettyc/ttyrec"
+	"togettyc/ttycommon"
 )
 
 type Config struct {
@@ -53,45 +50,23 @@ func (t *LocalTime) Get() time.Time {
 
 // Zstandard magic bytes: 0x28, 0xB5, 0x2F, 0xFD.
 var (
-	zstdMagic  = []byte{0x28, 0xB5, 0x2F, 0xFD}
 	timeFormat = "2006-01-02 15:04:05"
 )
 
 func (c *Config) Run() error {
 
-	var r io.ReadCloser
-	if c.RecordFile == "" {
-		r = os.Stdin
-	} else {
-		var err error
-		if r, err = os.Open(c.RecordFile); err != nil {
-			return fmt.Errorf("error opening %s: %v\n", c.RecordFile, err)
-		}
-	}
-	// Wrap the original reader in a bufio.Reader to peek at magic bytes.
-	br := bufio.NewReader(r)
-	peek, err := br.Peek(4)
+	decoder, openedFiles, err := ttycommon.NewDecoder(c.RecordFile)
 	if err != nil {
-		return fmt.Errorf("error reading magic bytes: %v\n", err)
+		return fmt.Errorf("could not open record: %v", err)
 	}
-
-	var decoder *ttyrec.Decoder
-	if bytes.Equal(peek, zstdMagic) {
-		// Create a zstd decoder using the buffered reader.
-		zstdDecoder, err := zstd.NewReader(br)
-		if err != nil {
-			return fmt.Errorf("error creating zstd reader: %v\n", err)
-		}
-		originalFile := r
-		defer originalFile.Close()
-		defer zstdDecoder.Close()
-		r = zstdDecoder.IOReadCloser()
-		decoder = ttyrec.NewDecoder(r)
-	} else {
-		decoder = ttyrec.NewDecoder(br)
+	for _, file := range openedFiles {
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				fmt.Printf("could not close file: %v", err)
+			}
+		}()
 	}
-	defer r.Close()
-
 	m := Record{
 		Decoder:      decoder,
 		Frames:       []frame{},
