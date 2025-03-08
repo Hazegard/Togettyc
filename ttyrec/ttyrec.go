@@ -37,7 +37,7 @@ func run(config Config) error {
 	}
 
 	config.Args = formatArgs(config.Args)
-	w, h, err := term.GetSize(int(os.Stdin.Fd()))
+	w, h, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		return err
 	}
