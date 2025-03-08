@@ -64,28 +64,45 @@ func run(config Config) error {
 	}
 	defer func() { _ = term.Restore(int(os.Stdin.Fd()), oldState) }()
 
+	errChan := make(chan error)
+	doneChan := make(chan struct{})
 	go func() {
-		_, _ = io.Copy(proc, os.Stdin)
+		_, err = io.Copy(proc, os.Stdin)
+		if err != nil {
+			errChan <- fmt.Errorf("error writing to pty: %v", err)
+		}
 	}()
 
 	f, err := openEncoder(config)
 	if err != nil {
-		fatalf("error opening encoder: %v", err)
+		return fmt.Errorf("error opening recorder: %v", err)
 	}
 	defer f.Close()
 	e := NewEncoder(f)
+
 	go func() {
 		_, err = io.Copy(io.MultiWriter(e, os.Stdout), proc)
 		if err != nil {
-			fatalf("error writing to encoder: %v", err)
+			errChan <- fmt.Errorf("error writing to recorder: %v", err)
 		}
 	}()
 
-	if _, err := proc.Wait(); err != nil {
-		return fmt.Errorf("error running command: %v", err)
-	}
+	go func() {
+		if _, err := proc.Wait(); err != nil {
+			errChan <- fmt.Errorf("error running command: %v", err)
+			return
+		}
+		doneChan <- struct{}{}
 
-	return nil
+	}()
+
+	select {
+	case err := <-errChan:
+		return err
+	case <-doneChan:
+		proc.Close()
+		return nil
+	}
 }
 
 func openEncoder(config Config) (io.WriteCloser, error) {
@@ -112,9 +129,4 @@ func openEncoder(config Config) (io.WriteCloser, error) {
 	} else {
 		return f, nil
 	}
-}
-
-func fatalf(format string, v ...interface{}) {
-	fmt.Fprintf(os.Stderr, format, v...)
-	os.Exit(1)
 }
