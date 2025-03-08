@@ -149,9 +149,16 @@ func tmux(config Config) ([]Frame, error) {
 	}
 	id := randString(16)
 	args := []string{
+		"-S",
+		id,
 		"new-session",
 		"-ds",
 		id,
+		";",
+		"set-option",
+		"-g",
+		"history-limit",
+		"999999999",
 		";",
 		"send-keys",
 		"-t",
@@ -164,6 +171,8 @@ func tmux(config Config) ([]Frame, error) {
 		id,
 		";",
 		"capture-pane",
+		"-S",
+		id,
 		"-t",
 		fmt.Sprintf("%s:1.0", id),
 		"-eCpNJ",
@@ -176,6 +185,9 @@ func tmux(config Config) ([]Frame, error) {
 		"-t",
 		id,
 	}
+
+	env := os.Environ()
+	env = append(env, fmt.Sprintf("TMUX_TMPDIR=/tmp/%s", "togettyc"))
 	cmd := exec.Command("tmux", args...)
 
 	var out bytes.Buffer
