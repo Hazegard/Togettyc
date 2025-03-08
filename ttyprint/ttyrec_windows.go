@@ -1,11 +1,14 @@
-//go:build windows
+package ttyprint
 
-package ttyrec
+/*//go:build windows
+
+
 
 import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"togettyc/ttyrec"
 
 	"fmt"
 	"io"
@@ -384,7 +387,7 @@ func ttyTerm() {
 
 //var flag_e = flag.String("e", os.Getenv("COMSPEC"), "command")
 
-func run(config Config) {
+func run(config ttyrec.Config) {
 
 	if !isTty() {
 		ttyReady()
@@ -409,7 +412,7 @@ func run(config Config) {
 		var err error
 		config.Shell, err = getShell()
 		if err != nil {
-			fatalf("error getting system shell: %s", err)
+			ttyrec.fatalf("error getting system shell: %s", err)
 		}
 	}
 
@@ -454,3 +457,4 @@ func getShell() (string, error) {
 		return "", errors.New("parent process not found")
 	}
 }
+*/

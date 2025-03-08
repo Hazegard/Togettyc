@@ -3,6 +3,8 @@ package ttyrec
 import (
 	"fmt"
 	"github.com/klauspost/compress/zstd"
+	"github.com/runletapp/go-console"
+	"golang.org/x/term"
 	"io"
 	"os"
 	"strings"
@@ -26,6 +28,64 @@ func (cfg *Config) Run() error {
 		cfg.Output += ".zst"
 	}
 	return run(*cfg)
+}
+
+func run(config Config) error {
+
+	if config.Shell == "" {
+		config.Shell = getShellCmd(append([]string{detectShell()}, shells...))
+	}
+
+	config.Args = formatArgs(config.Args)
+	w, h, err := term.GetSize(int(os.Stdin.Fd()))
+	if err != nil {
+		return err
+	}
+	proc, err := console.New(w, h)
+	if err != nil {
+		return err
+	}
+	err = proc.SetENV(os.Environ())
+	if err != nil {
+		return err
+	}
+	err = proc.Start(append([]string{config.Shell}, config.Args...))
+	if err != nil {
+		return fmt.Errorf("error starting command in pty: %v", err)
+	}
+
+	go handleResize(proc)
+
+	defer func() { _ = proc.Close() }()
+
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		return fmt.Errorf("error creating terminal state: %v", err)
+	}
+	defer func() { _ = term.Restore(int(os.Stdin.Fd()), oldState) }()
+
+	go func() {
+		_, _ = io.Copy(proc, os.Stdin)
+	}()
+
+	f, err := openEncoder(config)
+	if err != nil {
+		fatalf("error opening encoder: %v", err)
+	}
+	defer f.Close()
+	e := NewEncoder(f)
+	go func() {
+		_, err = io.Copy(io.MultiWriter(e, os.Stdout), proc)
+		if err != nil {
+			fatalf("error writing to encoder: %v", err)
+		}
+	}()
+
+	if _, err := proc.Wait(); err != nil {
+		return fmt.Errorf("error running command: %v", err)
+	}
+
+	return nil
 }
 
 func openEncoder(config Config) (io.WriteCloser, error) {
