@@ -35,7 +35,7 @@ func (e *Encoder) Write(p []byte) (int, error) {
 
 		header.Time.Set(time.Since(time.Unix(0, 0)))
 	} else {
-		header.Time.Set(time.Since(e.startedAt))
+		header.Time.Set(time.Since(time.Unix(0, 0)))
 	}
 
 	// Write header.
