@@ -229,7 +229,7 @@ func tmux(config Config) ([]Frame, error) {
 		//line = bytes.ReplaceAll(line, []byte("\033[2J\033[3J\033[H"), []byte(""))
 		//line = bytes.ReplaceAll(line, []byte("\033[?1049h"), []byte(""))
 		records := Frame{
-			Data: line,
+			Data: append(line, []byte("\033[0m")...),
 			Date: date,
 		}
 		newRecords = append(newRecords, records)
