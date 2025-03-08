@@ -32,6 +32,7 @@ func run(config Config) error {
 		// cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	}
 
+	cmd.Env = os.Environ()
 	ptmx, err := pty.Start(cmd)
 	if err != nil {
 		return fmt.Errorf("error starting command in pty: %v", err)
