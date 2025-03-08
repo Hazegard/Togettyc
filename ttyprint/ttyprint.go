@@ -148,9 +148,14 @@ func tmux(config Config) ([]Frame, error) {
 		return []Frame{}, err
 	}
 	id := randString(16)
+	sessionSocket := fmt.Sprintf("/tmp/tmux_togettyc-%s.sock", id)
+	defer func() {
+		os.Remove(sessionSocket)
+	}()
+	paneId := fmt.Sprintf("%s:1.0", id)
 	args := []string{
 		"-S",
-		id,
+		sessionSocket,
 		"new-session",
 		"-ds",
 		id,
@@ -162,7 +167,7 @@ func tmux(config Config) ([]Frame, error) {
 		";",
 		"send-keys",
 		"-t",
-		fmt.Sprintf("%s:1.0", id),
+		paneId,
 		fmt.Sprintf(" %s print --internal-tmux-mode %s; tmux wait -S %s", exePath, config.WriteCli(), id),
 		//fmt.Sprintf(" %s --internal-tmux-mode %s; tmux wait -S %s", exePath, config.WriteCli(), id),
 		"C-m",
@@ -174,27 +179,31 @@ func tmux(config Config) ([]Frame, error) {
 		"-S",
 		id,
 		"-t",
-		fmt.Sprintf("%s:1.0", id),
+		paneId,
 		"-eCpNJ",
 		"-S",
 		"-",
 		"-E",
 		"-",
 		";",
-		"kill-session",
+		"kill-pane",
 		"-t",
-		id,
+		paneId,
+		//";",
+		//"kill-session",
+		//"-t",
+		//id,
 	}
 
 	env := os.Environ()
-	env = append(env, fmt.Sprintf("TMUX_TMPDIR=/tmp/%s", "togettyc"))
+	env = append(env, fmt.Sprintf("TMUX_TMPDIR=%s", sessionSocket))
 	cmd := exec.Command("tmux", args...)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	// Run the command.
 	if err := cmd.Run(); err != nil {
-		return []Frame{}, err
+		return []Frame{}, fmt.Errorf("error running tmux command: %v\n", err)
 	}
 
 	// res := out.String()
