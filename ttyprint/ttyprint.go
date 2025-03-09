@@ -55,7 +55,7 @@ var (
 
 func (c *Config) Run() error {
 
-	decoder, openedFiles, err := ttycommon.NewDecoder(c.RecordFile)
+	decoder, openedFiles, err := ttycommon.InitDecoder(c.RecordFile)
 	if err != nil {
 		return fmt.Errorf("could not open record: %v", err)
 	}

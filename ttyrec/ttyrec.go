@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"togettyc/ttycommon"
 )
 
 type Config struct {
@@ -78,7 +79,7 @@ func run(config Config) error {
 		return fmt.Errorf("error opening recorder: %v", err)
 	}
 	defer f.Close()
-	e := NewEncoder(f)
+	e := ttycommon.NewEncoder(f)
 
 	go func() {
 		_, err = io.Copy(io.MultiWriter(e, os.Stdout), proc)

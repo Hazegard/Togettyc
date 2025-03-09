@@ -1,9 +1,8 @@
-package ttyrec
+package ttycommon
 
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"maze.io/x/ttyrec"
 )
 
@@ -67,17 +66,17 @@ func (d *Decoder) decodeFrame(discard bool) (*ttyrec.Frame, error) {
 		n += int64(f.Len)
 		l := io.LimitReader(d.r, int64(f.Len))
 		if discard {
-			if _, err = io.Copy(ioutil.Discard, l); err != nil {
+			if _, err = io.Copy(io.Discard, l); err != nil {
 				return nil, err
 			}
-		} else if f.Data, err = ioutil.ReadAll(l); err != nil {
+		} else if f.Data, err = io.ReadAll(l); err != nil {
 			return nil, err
 		}
 	}
 
 	// Record first time stamp, the rest of the frame times are relative to the first.
-	empty := ttyrec.TimeVal{}
-	if !d.started && f.Header.Time != empty {
+
+	if !d.started && (f.Header.Time.Seconds == 0 && f.Header.Time.MicroSeconds == 0) {
 		d.started = true
 		d.startedAt = f.Header.Time
 	}

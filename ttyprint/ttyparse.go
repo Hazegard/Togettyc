@@ -3,7 +3,7 @@ package ttyprint
 import (
 	"bytes"
 	"time"
-	"togettyc/ttyrec"
+	"togettyc/ttycommon"
 )
 
 type frame struct {
@@ -17,7 +17,7 @@ type Frame struct {
 }
 
 type Record struct {
-	Decoder      *ttyrec.Decoder
+	Decoder      *ttycommon.Decoder
 	Frames       []frame
 	CurrentFrame int
 }

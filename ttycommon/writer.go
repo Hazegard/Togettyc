@@ -1,4 +1,4 @@
-package ttyrec
+package ttycommon
 
 import (
 	"io"
