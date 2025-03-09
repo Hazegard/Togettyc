@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Speed      float64 `help:"Modify the speed" optional:"" short:"s" default:"1.0"`
 	NoWait     bool    `help:"No wait mode" optional:"" short:"n" default:"false"`
-	RecordFile string  `help:"Dashboard page" default:"all" arg:"" type:"existingfile"`
+	RecordFile string  `help:"Record file to replay" default:"all" arg:"" type:"existingfile"`
 }
 
 func (c *Config) Run() error {

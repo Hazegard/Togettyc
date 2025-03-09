@@ -74,7 +74,7 @@ func (d *Decoder) decodeFrame(discard bool) (*ttyrec.Frame, error) {
 			return nil, err
 		}
 	}
-	
+
 	// Record first time stamp, the rest of the frame times are relative to the first.
 	empty := ttyrec.TimeVal{}
 	if !d.started && f.Header.Time != empty {

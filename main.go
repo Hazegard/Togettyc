@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/alecthomas/kong"
 	"log"
+	"os"
+	"path/filepath"
 	"togettyc/ttyplay"
 	"togettyc/ttyprint"
 	"togettyc/ttyrec"
@@ -14,14 +16,34 @@ type Config struct {
 	Play  ttyplay.Config  `cmd:"" help:"Play the record"`
 }
 
+func (c *Config) Run() error {
+	return nil
+}
+
+type ConfigRunner interface {
+	Run() error
+}
+
 func main() {
-	cfg := Config{}
+
+	name := filepath.Base(os.Args[0])
+	var ctx *kong.Context
 	kongOptions := []kong.Option{
-		kong.Name("Togettyc"),
-		kong.Description("Cross-platform reimplementation og ttyrec"),
+		kong.Name(name),
+		kong.Description("Cross-platform reimplementation of ttyrec"),
 		kong.UsageOnError(),
 	}
-	ctx := kong.Parse(&cfg, kongOptions...)
+	switch name {
+	case "ttyplay":
+		ctx = kong.Parse(&ttyplay.Config{}, kongOptions...)
+	case "ttyrec":
+		ctx = kong.Parse(&ttyrec.Config{}, kongOptions...)
+	case "ttyprint":
+		ctx = kong.Parse(&ttyprint.Config{}, kongOptions...)
+	default:
+		ctx = kong.Parse(&Config{}, kongOptions...)
+	}
+
 	err := ctx.Run()
 	if err != nil {
 		log.Fatal(err)

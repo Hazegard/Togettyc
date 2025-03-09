@@ -83,7 +83,7 @@ func (m *Record) ReadAll() []Frame {
 
 		data = bytes.ReplaceAll(data, []byte("\033[2J\033[3J\033[H"), []byte(""))
 		data = bytes.ReplaceAll(data, []byte("\033[?1049h"), []byte(""))
-		
+
 		f := Frame{
 			Data: data,
 			Date: timestamps[i],
