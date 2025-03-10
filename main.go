@@ -8,20 +8,18 @@ import (
 	"togettyc/ttyplay"
 	"togettyc/ttyprint"
 	"togettyc/ttyrec"
+	"togettyc/ttytime"
 )
 
 type Config struct {
+	Play  ttyplay.Config  `cmd:"" help:"Play the record"`
 	Print ttyprint.Config `cmd:"" help:"Render the record"`
 	Rec   ttyrec.Config   `cmd:"" help:"Record" default:"withargs"`
-	Play  ttyplay.Config  `cmd:"" help:"Play the record"`
+	Time  ttytime.Config  `cmd:"" help:"Time to record"`
 }
 
 func (c *Config) Run() error {
 	return nil
-}
-
-type ConfigRunner interface {
-	Run() error
 }
 
 func main() {
@@ -40,6 +38,8 @@ func main() {
 		ctx = kong.Parse(&ttyrec.Config{}, kongOptions...)
 	case "ttyprint":
 		ctx = kong.Parse(&ttyprint.Config{}, kongOptions...)
+	case "ttytime":
+		ctx = kong.Parse(&ttytime.Config{}, kongOptions...)
 	default:
 		ctx = kong.Parse(&Config{}, kongOptions...)
 	}
