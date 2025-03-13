@@ -1,7 +1,12 @@
 # Togettyc
 
 
-Cross platform reimplementation of [ttyrec](http://0xcc.net/ttyrec/) written in golang.
+<div style="text-align:center">
+    <img src="img/Togettyc.png" alt="drawing" width="200"/>
+</div>
+
+
+> Cross platform reimplementation of [ttyrec](http://0xcc.net/ttyrec/) written in golang.
 
 It supports:
 - `rec`: Record a session
@@ -51,7 +56,7 @@ Flags:
   -S, --shell=STRING     Shell to use, using current one by default
 ```
 
-> `togettyc` peut être utilisé au lieu de `togettyc rec`
+> `togettyc` can be used instead of `togettyc rec`
 
 ```shell
 $ togettyc print
@@ -75,7 +80,7 @@ Flags:
 
 
 
-## Play: start a new record (equivalent to ttyrec)
+## Play: replay a record (equivalent to play)
 ```
 $ togettyc play
 Usage: togettyc play [<record-file>] [flags]
@@ -106,4 +111,25 @@ Flags:
   -h, --help              Show context-sensitive help.
 
   -h, --human-readable    Print human readable time
+```
+
+## Print: Render the record
+
+```shell
+Usage: togettyc print [<record-file>] [flags]
+
+Render the record
+
+Arguments:
+  [<record-file>]    Record file to print
+
+Flags:
+  -h, --help                     Show context-sensitive help.
+
+  -d, --date                     Show date
+      --no-color                 Disable colors
+  -H, --html                     Display result in HTML
+  -S, --start-date=LOCAL-TIME    Show results after the provided date (format:"YYYY-MM-DD hh:mm:ss")
+  -E, --end-date=LOCAL-TIME      Show results before the provided date (format:"YYYY-MM-DD hh:mm:ss")
+  -T, --tmux                     Clean the output with tmux. It should reduce the noise provoked by garbage terminal manipulation
 ```

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/alecthomas/kong"
 	"log"
 	"os"
 	"path/filepath"
+	"togettyc/ttycommon"
 	"togettyc/ttyplay"
 	"togettyc/ttyprint"
 	"togettyc/ttyrec"
@@ -26,10 +28,17 @@ func main() {
 
 	name := filepath.Base(os.Args[0])
 	var ctx *kong.Context
+	//fmt.Println(ttycommon.GetBanner())
 	kongOptions := []kong.Option{
 		kong.Name(name),
 		kong.Description("Cross-platform reimplementation of ttyrec"),
 		kong.UsageOnError(),
+		kong.Help(func(options kong.HelpOptions, ctx *kong.Context) error {
+			if ctx.Error == nil {
+				fmt.Println(ttycommon.GetBanner())
+			}
+			return kong.DefaultHelpPrinter(options, ctx)
+		}),
 	}
 	switch name {
 	case "ttyplay":
