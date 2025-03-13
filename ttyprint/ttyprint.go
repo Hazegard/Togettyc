@@ -28,7 +28,7 @@ func (c *Config) WriteCli() string {
 	}
 
 	if c.RecordFile != "" {
-		args = append(args, c.RecordFile)
+		args = append(args, strings.ReplaceAll(c.RecordFile, " ", "\\ "))
 	}
 	return strings.Join(args, " ")
 }
