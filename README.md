@@ -6,7 +6,7 @@
 </div>
 
 
-> Cross platform reimplementation of [ttyrec](http://0xcc.net/ttyrec/) written in golang.
+> Cross platform reimplementation of [ttyrec](http://0xcc.net/ttyrec/) written in golang, based on [maze.io/x/ttyrec](maze.io/x/ttyrec) .
 
 It supports:
 - `rec`: Record a session
