@@ -1,9 +1,13 @@
 package ttyprint
 
 import (
+	"bytes"
 	"embed"
+	"fmt"
 	"github.com/buildkite/terminal-to-html/v3"
 	"os"
+	"path/filepath"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -30,10 +34,18 @@ func GenerateHtml(config Config, records []Frame) {
 		Config: config,
 		Frames: records,
 	}
-	err = t.Execute(os.Stdout, templateData)
+	content := bytes.Buffer{}
+	err = t.Execute(&content, templateData)
 	if err != nil {
 		fatalf("error rendering HTML template: %v\n", err)
 	}
+	output := strings.TrimSuffix(config.RecordFile, filepath.Ext(config.RecordFile)) + ".html"
+
+	err = os.WriteFile(output, content.Bytes(), 0644)
+	if err != nil {
+		fatalf("error writing HTML output: %v\n", err)
+	}
+	fmt.Printf("Generated HTML output: %s\n", output)
 }
 
 func DateFormater(config Config) func(time.Time) string {
