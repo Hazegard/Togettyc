@@ -15,7 +15,7 @@ type Config struct {
 	Date             bool      `help:"Show date" optional:"" short:"d" default:"false"`
 	NoColor          bool      `help:"Disable colors" optional:"" default:"false"`
 	Html             bool      `help:"Display result in HTML" optional:"" short:"H" default:"false"`
-	RecordFile       string    `help:"Record file to print" default:"all" arg:"" type:"existingfile"`
+	RecordFile       string    `help:"Record file to print" default:"" arg:"" type:"existingfile"`
 	StartDate        LocalTime `help:"Show results after the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"S" `
 	EndDate          LocalTime `help:"Show results before the provided date (format:\"YYYY-MM-DD hh:mm:ss\")" optional:"" short:"E" `
 	Tmux             bool      `help:"Clean the output with tmux. It should reduce the noise provoked by garbage terminal manipulation" short:"T" default:"false"`

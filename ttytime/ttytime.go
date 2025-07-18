@@ -8,8 +8,8 @@ import (
 )
 
 type Config struct {
-	HumanReadable bool     `help:"Print human readable time" optional:"" short:"h" default:"false"`
-	RecordFile    []string `help:"Record file to replay" default:"all" arg:"" type:"existingfile"`
+	HumanReadable bool     `help:"Print human readable time" optional:"" short:"H" default:"false"`
+	RecordFile    []string `help:"Record file to replay" default:"" arg:"" type:"string"`
 }
 
 func (c *Config) Run() error {
