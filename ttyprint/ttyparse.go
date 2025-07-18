@@ -28,7 +28,7 @@ func (m *Record) ReadAll() []Frame {
 	var timestamps []time.Time
 	var datas [][]byte
 
-	currentData := []byte{}
+	var currentData []byte
 	currentTs := time.Time{}
 
 	for f := range frames {
@@ -41,11 +41,11 @@ func (m *Record) ReadAll() []Frame {
 			// If the last frame has remaining element
 			// append the first line of the current frame to the last frame element
 			currentData = append(currentData, bb[0]...)
-			// If we have more than one line in the current frame
-			// THe first line of the current frame is not the last
-			// So we can append the concatenation to the full data
-			// As well as the current timestamp (which is the timestamp of the previous frame
-			// then we set the initialization value to 1 to skep the first frame element
+			// If we have more than one line in the current frame,
+			// The first line of the current frame is not the last.
+			// So we can append the concatenation to the full data,
+			// as well as the current timestamp (which is the timestamp of the previous frame).
+			// Then we set the initialization value to 1 to skep the first frame element
 			// Finally, we reset the buffers
 			if len(bb) > 1 {
 				datas = append(datas, currentData)
@@ -74,7 +74,7 @@ func (m *Record) ReadAll() []Frame {
 
 	// var res []string
 
-	newFrames := []Frame{}
+	var newFrames []Frame
 	for i := 0; i < len(datas); i++ {
 		if timestamps[i].Format("2006") == "0001" {
 			continue

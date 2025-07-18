@@ -13,22 +13,19 @@ import (
 )
 
 //go:embed record.html.tmpl
-var html_template embed.FS
+var htmlTemplate embed.FS
 
 type TemplateData struct {
 	Config Config
 	Frames []Frame
 }
 
-func GenerateHtml(config Config, records []Frame) {
-	tmpl, err := html_template.ReadFile("record.html.tmpl")
+func GenerateHtml(config Config, records []Frame) error {
+	tmpl, err := htmlTemplate.ReadFile("record.html.tmpl")
 	if err != nil {
-		fatalf("error loading HTML template: %v\n", err)
+		return fmt.Errorf("error loading HTML template: %v\n", err)
 	}
 	t := template.Must(template.New("HTML Record").Funcs(template.FuncMap{"FormatDate": DateFormater(config), "Ansi2Html": terminal.Render}).Parse(string(tmpl)))
-	if err != nil {
-		fatalf("error loading HTML template: %v\n", err)
-	}
 
 	templateData := TemplateData{
 		Config: config,
@@ -37,15 +34,16 @@ func GenerateHtml(config Config, records []Frame) {
 	content := bytes.Buffer{}
 	err = t.Execute(&content, templateData)
 	if err != nil {
-		fatalf("error rendering HTML template: %v\n", err)
+		return fmt.Errorf("error rendering HTML template: %v\n", err)
 	}
 	output := strings.TrimSuffix(config.RecordFile, filepath.Ext(config.RecordFile)) + ".html"
 
 	err = os.WriteFile(output, content.Bytes(), 0644)
 	if err != nil {
-		fatalf("error writing HTML output: %v\n", err)
+		return fmt.Errorf("error writing HTML output: %v\n", err)
 	}
 	fmt.Printf("Generated HTML output: %s\n", output)
+	return nil
 }
 
 func DateFormater(config Config) func(time.Time) string {

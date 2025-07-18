@@ -13,7 +13,7 @@ type Encoder struct {
 	// started indicates if we have started writing
 	started bool
 
-	// startedAt is the time of first write
+	// startedAt is the time of the first write
 	startedAt time.Time
 }
 

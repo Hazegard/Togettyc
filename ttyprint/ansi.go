@@ -2,6 +2,7 @@ package ttyprint
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -39,7 +40,7 @@ func StripColorString(str string) string {
 	return re.ReplaceAllString(str, "")
 }
 
-func GenerateConsoleOutput(config Config, records []Frame) {
+func GenerateConsoleOutput(config Config, records []Frame) error {
 	var result [][]byte
 	sep := ": "
 	if config.InternalTmuxMode {
@@ -56,6 +57,7 @@ func GenerateConsoleOutput(config Config, records []Frame) {
 	}
 	_, err := io.WriteString(os.Stdout, string(bytes.Join(result, []byte("\n"))))
 	if err != nil {
-		fatalf("writing to stdout: %v\n", err)
+		return fmt.Errorf("writing to stdout: %v\n", err)
 	}
+	return nil
 }

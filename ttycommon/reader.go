@@ -9,7 +9,7 @@ import (
 // ErrReadSeeker is returned if the provided Reader does not provide the io.ReadSeeker interface.
 var ErrReadSeeker = errors.New("ttyrec: provided Reader does not implement io.ReadSeeker")
 
-// ErrIllegalSeek is returned if an illegal seek operation is requested, such as seeking to an out of bounds frame.
+// ErrIllegalSeek is returned if an illegal seek operation is requested, such as seeking to an out-of-bounds frame.
 var ErrIllegalSeek = errors.New("ttyrec: seek to an invalid offset")
 
 // Decoder for TTY recordings.
@@ -74,7 +74,7 @@ func (d *Decoder) decodeFrame(discard bool) (*ttyrec.Frame, error) {
 		}
 	}
 
-	// Record first time stamp, the rest of the frame times are relative to the first.
+	// Record time stamp first, the rest of the frame times are relative to the first.
 
 	if !d.started && (f.Header.Time.Seconds == 0 && f.Header.Time.MicroSeconds == 0) {
 		d.started = true

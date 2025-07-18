@@ -48,7 +48,6 @@ func (t *LocalTime) Get() time.Time {
 	return time.Time(*t)
 }
 
-// Zstandard magic bytes: 0x28, 0xB5, 0x2F, 0xFD.
 var (
 	timeFormat = "2006-01-02 15:04:05"
 )
@@ -73,7 +72,7 @@ func (c *Config) Run() error {
 		CurrentFrame: 0,
 	}
 
-	records := []Frame{}
+	var records []Frame
 	if c.InternalTmuxMode || !c.Tmux || !IsInPath("tmux") {
 		records = m.ReadAll()
 	} else {
@@ -90,9 +89,15 @@ func (c *Config) Run() error {
 		records = StripColor(records)
 	}
 	if c.Html {
-		GenerateHtml(*c, records)
+		err = GenerateHtml(*c, records)
+		if err != nil {
+			return err
+		}
 	} else {
-		GenerateConsoleOutput(*c, records)
+		err = GenerateConsoleOutput(*c, records)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -101,13 +106,8 @@ func FormatDate(date time.Time) string {
 	return date.Format(timeFormat)
 }
 
-func fatalf(format string, v ...interface{}) {
-	fmt.Fprintf(os.Stderr, format, v...)
-	os.Exit(1)
-}
-
 func FilterRecordsDate(config Config, records []Frame) []Frame {
-	newFrames := []Frame{}
+	var newFrames []Frame
 
 	for _, frame := range records {
 		if (config.EndDate.Get().IsZero() || frame.Date.Before(config.EndDate.Get())) && (config.StartDate.Get().IsZero() || frame.Date.After(config.StartDate.Get())) {
@@ -213,7 +213,6 @@ func tmux(config Config) ([]Frame, error) {
 	return newRecords, nil
 }
 
-// tmux new-session -ds TEST \; send-keys -t TEST:1.0 "go run . -d --no-color  output.log.ttyrec; tmux wait -S ping" C-m \; wait ping \; capture-pane -t TEST:1.0 -eCpNJ -S - -E - \; kill-session -t TEST
 func IsInPath(cmd string) bool {
 	res, err := exec.LookPath(cmd)
 	if err != nil {
