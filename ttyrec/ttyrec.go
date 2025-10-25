@@ -2,14 +2,15 @@ package ttyrec
 
 import (
 	"fmt"
-	"github.com/klauspost/compress/zstd"
-	"github.com/runletapp/go-console"
-	"golang.org/x/term"
+	"github.com/hazegard/togettyc/ttycommon"
 	"io"
 	"os"
 	"strings"
 	"time"
-	"togettyc/ttycommon"
+
+	"github.com/klauspost/compress/zstd"
+	"github.com/runletapp/go-console"
+	"golang.org/x/term"
 )
 
 type Config struct {
@@ -17,8 +18,8 @@ type Config struct {
 	Compress bool     `help:"Compress the result (zstd)" short:"Z"`
 	Output   string   `help:"Output file name" short:"f"`
 	Shell    string   `help:"Shell to use, using current one by default" short:"S"`
-	Exe      string   `help:"Command to execute" arg:"" optional""`
-	Args     []string `arg:"" help:"arguments" optional""`
+	Exe      string   `help:"Command to execute" arg:"" optional:""`
+	Args     []string `arg:"" help:"arguments" optional:""`
 }
 
 func (cfg *Config) Run() error {

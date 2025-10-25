@@ -1,14 +1,14 @@
-module togettyc
+module github.com/hazegard/togettyc
 
-go 1.24
+go 1.24.0
 
 require (
-	github.com/alecthomas/kong v1.12.0
+	github.com/alecthomas/kong v1.12.1
 	github.com/buildkite/terminal-to-html/v3 v3.16.8
-	github.com/klauspost/compress v1.18.0
+	github.com/klauspost/compress v1.18.1
 	github.com/runletapp/go-console v0.0.0-20211204140000-27323a28410a
-	golang.org/x/sys v0.34.0
-	golang.org/x/term v0.33.0
+	golang.org/x/sys v0.37.0
+	golang.org/x/term v0.36.0
 	maze.io/x/ttyrec v1.0.0
 )
 

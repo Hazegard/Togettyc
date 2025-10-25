@@ -2,10 +2,10 @@ package ttyplay
 
 import (
 	"fmt"
+	"github.com/hazegard/togettyc/ttycommon"
 	"maze.io/x/ttyrec"
 	"os"
 	"time"
-	"togettyc/ttycommon"
 )
 
 type Config struct {

@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/hazegard/togettyc/ttycommon"
+	"github.com/hazegard/togettyc/ttyplay"
+	"github.com/hazegard/togettyc/ttyprint"
+	"github.com/hazegard/togettyc/ttyrec"
+	"github.com/hazegard/togettyc/ttytime"
 	"github.com/alecthomas/kong"
 	"log"
 	"os"
 	"path/filepath"
-	"togettyc/ttycommon"
-	"togettyc/ttyplay"
-	"togettyc/ttyprint"
-	"togettyc/ttyrec"
-	"togettyc/ttytime"
 )
 
 type Config struct {

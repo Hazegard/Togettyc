@@ -2,8 +2,8 @@ package ttyprint
 
 import (
 	"bytes"
+	"github.com/hazegard/togettyc/ttycommon"
 	"time"
-	"togettyc/ttycommon"
 )
 
 type frame struct {

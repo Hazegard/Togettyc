@@ -2,9 +2,9 @@ package ttytime
 
 import (
 	"fmt"
+	"github.com/hazegard/togettyc/ttycommon"
 	"maze.io/x/ttyrec"
 	"time"
-	"togettyc/ttycommon"
 )
 
 type Config struct {

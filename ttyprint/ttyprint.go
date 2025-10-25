@@ -3,12 +3,12 @@ package ttyprint
 import (
 	"bytes"
 	"fmt"
+	"github.com/hazegard/togettyc/ttycommon"
 	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
-	"togettyc/ttycommon"
 )
 
 type Config struct {
