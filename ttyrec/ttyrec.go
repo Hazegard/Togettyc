@@ -2,13 +2,13 @@ package ttyrec
 
 import (
 	"fmt"
-	"github.com/hazegard/togettyc/ttycommon"
 	"io"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/klauspost/compress/zstd"
+	"github.com/hazegard/togettyc/ttyencoder"
+
 	"github.com/runletapp/go-console"
 	"golang.org/x/term"
 )
@@ -75,13 +75,19 @@ func run(config Config) error {
 		}
 	}()
 
-	f, err := openEncoder(config)
+	/*f, err := openEncoder(config)
 	if err != nil {
 		return fmt.Errorf("error opening recorder: %v", err)
 	}
 	defer f.Close()
-	e := ttycommon.NewEncoder(f)
+	e := ttycommon.NewEncoder(f)*/
 
+	e, err := ttyencoder.NewEncoder().
+		WithAppend(config.Append).
+		WithCompress(config.Compress).
+		WithOutput(config.Output).
+		Open()
+	defer e.Close()
 	go func() {
 		_, err = io.Copy(io.MultiWriter(e, os.Stdout), proc)
 		if err != nil {
@@ -104,31 +110,5 @@ func run(config Config) error {
 	case <-doneChan:
 		proc.Close()
 		return nil
-	}
-}
-
-func openEncoder(config Config) (io.WriteCloser, error) {
-	var (
-		f   *os.File
-		err error
-	)
-
-	if config.Append {
-		f, err = os.OpenFile(config.Output, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
-	} else {
-		f, err = os.Create(config.Output)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	if config.Compress {
-		zstdFile, err := zstd.NewWriter(f)
-		if err != nil {
-			return nil, err
-		}
-		return zstdFile, nil
-	} else {
-		return f, nil
 	}
 }
